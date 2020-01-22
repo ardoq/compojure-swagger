@@ -99,13 +99,13 @@
           {:keys [spec description]} :response
           {:keys [path-par body]} :parameters} :swagger
          :keys [path method]} verb]
-    {(str path)
-     {method
-      {:summary summary :description desc
-       ::swagger/parameters {:path path-par
-                             :body body}
-       ::swagger/responses {200 {:schema spec
-                                 :description description}}}}}))
+    (swagger/swagger-spec {(str path)
+                           {method
+                            {:summary             summary :description desc
+                             ::swagger/parameters {:path path-par
+                                                   :body body}
+                             ::swagger/responses  {200 {:schema      spec
+                                                        :description description}}}}})))
 
 (defn- swagify-route [route]
   (if-let [children (:children route)]

@@ -14,8 +14,8 @@
       (is (= (swagify-route ctx)
              {"/top/bottom" {:get {:summary                            nil,
                                    :description                        nil,
-                                   :spec-tools.swagger.core/parameters {:path nil, :body nil},
-                                   :spec-tools.swagger.core/responses  {200 {:schema nil, :description nil}}}}})))))
+                                   :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                                   :responses  {200 {:schema nil, :description ""}}}}})))))
 
 (deftest swagify-nested-context-test
   (testing "nesting contexts works as expected"
@@ -25,8 +25,8 @@
       (is (= (swagify-route ctx)
              {"/top/mid/bot" {:get {:summary                            nil,
                                     :description                        nil,
-                                    :spec-tools.swagger.core/parameters {:path nil, :body nil},
-                                    :spec-tools.swagger.core/responses  {200 {:schema nil, :description nil}}}}})))))
+                                    :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                                    :responses  {200 {:schema nil, :description ""}}}}})))))
 
 (deftest swagger-routes-test
   (testing "swagifying routes works as expected"
@@ -36,12 +36,12 @@
       (is (= (swagify-route handler)
              {"/test1" {:get {:summary                            nil,
                               :description                        nil,
-                              :spec-tools.swagger.core/parameters {:path nil, :body nil},
-                              :spec-tools.swagger.core/responses  {200 {:schema nil, :description nil}}}},
+                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                              :responses  {200 {:schema nil, :description ""}}}},
               "/test2" {:get {:summary                            nil,
                               :description                        nil,
-                              :spec-tools.swagger.core/parameters {:path nil, :body nil},
-                              :spec-tools.swagger.core/responses  {200 {:schema nil, :description nil}}}}})))))
+                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                              :responses  {200 {:schema nil, :description ""}}}}})))))
 
 (deftest routes-test
   (testing "routes works as expected"
@@ -91,5 +91,5 @@
       (is (= (swagify-route handler)
              {"/test1" {:get {:summary                            "it works" ,
                               :description                        nil,
-                              :spec-tools.swagger.core/parameters {:path nil, :body nil},
-                              :spec-tools.swagger.core/responses  {200 {:schema ::test-spec, :description nil}}}}})))))
+                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                              :responses  {200 {:schema {:type "string"}, :description ""}}}}})))))
