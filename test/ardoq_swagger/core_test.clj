@@ -1,6 +1,7 @@
 (ns ardoq-swagger.core-test
   (:require [clojure.test :refer :all]
             [ardoq-swagger.core :refer [routes context GET POST PUT DELETE ANY] :as swagger]
+            [clojure.spec.alpha :as s]
             [ring.mock.request :as mock]))
 
 (def swagify-route #'swagger/swagify-route)
