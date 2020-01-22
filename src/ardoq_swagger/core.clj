@@ -105,9 +105,7 @@
        ::swagger/parameters {:path path-par
                              :body body}
        ::swagger/responses {200 {:schema spec
-                                 :description description}}
-       }}}
-    ))
+                                 :description description}}}}}))
 
 (defn- swagify-route [route]
   (if-let [children (:children route)]
@@ -121,8 +119,7 @@
         ;; Routes
         new-children))
     ;; No children -> HTTP verb
-    (swagify-verb route)
-    ))
+    (swagify-verb route)))
 
 (defn- swagify-options [options]
   (let [{:keys [version title description]} options]
@@ -146,5 +143,4 @@
                         (merge
                           {:swagger "2.0"}
                           (rsc/deep-merge swagger-default (swagify-options options))
-                          {:paths (swagify-route swag-routes)})))
-            )))
+                          {:paths (swagify-route swag-routes)}))))))
