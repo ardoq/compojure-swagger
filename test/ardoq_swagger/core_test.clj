@@ -93,3 +93,24 @@
                               :description                        nil,
                               :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
                               :responses  {200 {:schema {:type "string"}, :description ""}}}}})))))
+
+(deftest transformer-test
+  (testing "with-swagger transformer works as expected"
+    (let [test-key (s/def ::first-name string?)
+          test-spec (s/keys :req [::first-name])
+          transformer (fn camelize-first-name [x] (-> x
+                                                      (assoc-in ["/test1" :get :responses 200 :schema :properties]
+                                                                {"firstName" {:type "string"}})
+                                                      (assoc-in ["/test1" :get :responses 200 :schema :required]
+                                                                ["firstName"])))
+          handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works"
+                                                                   :response {:spec test-spec}
+                                                                   :transformer transformer})]
+      (is (= (swagify-route handler)
+             {"/test1" {:get {:summary "it works",
+                              :description nil,
+                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                              :responses {200 {:schema {:type "object",
+                                                        :properties {"firstName" {:type "string"}},
+                                                        :required ["firstName"]},
+                                               :description ""}}}}})))))
