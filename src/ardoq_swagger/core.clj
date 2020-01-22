@@ -57,23 +57,6 @@
   [elem]
   (some #(= elem %) ["GET" "POST" "PUT" "DELETE" "ANY"])) ; XXX: Symbol or string?
 
-(defn- is-routes-or-context?
-  [elem]
-   (some #(= elem %) ["routes" "context"]))
-
-(defn- is-valid? 
-  "is elem a compojure handler type"
-  [elem]
-  (or (is-verb? elem) (some #(= elem %) ["routes" "context"]))); XXX: What assumptions are we making?
-
-(defn- circumcize-children
-  "If child is verb, remove body"
-  [children]
-  `(list ~@(map #(if (is-verb? (-> % first name))
-                  (-> % vec (assoc 3 nil) seq)
-                  %)
-               children)))
-
 (defn- unhandle-children
   "If child is valid, don't let it have a handler"
   [children]
