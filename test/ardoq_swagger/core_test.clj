@@ -71,3 +71,24 @@
                                                     (swagger/GET "/bot" [] (:query-string req))))]
       (is (= "it=works"
              (:body (handler (mock/request :get "/top/mid/bot?it=works"))))))))
+
+(deftest with-swagger-test
+  (testing "with-swagger works as expected"
+    (let [handler (swagger/with-swagger (swagger/context "/test1" []
+                                                         (swagger/with-swagger (GET "test" [] nil)
+                                                           {:really "does"}))
+                    {:it "works"})]
+      (is (= "works" (get-in handler [:swagger :it])))
+      (is (= "does" (get-in (first (:children handler)) [:swagger :really])))
+      )))
+
+(deftest with-swagger-swagify-test
+  (testing "with-swagger swagifying works as expected"
+    (let [test-spec (s/def ::test-spec string?)
+          handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works"
+                                                                   :response {:spec test-spec}})]
+      (is (= (swagify-route handler)
+             {"/test1" {:get {:summary                            "it works" ,
+                              :description                        nil,
+                              :spec-tools.swagger.core/parameters {:path nil, :body nil},
+                              :spec-tools.swagger.core/responses  {200 {:schema ::test-spec, :description nil}}}}})))))
