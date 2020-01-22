@@ -1,5 +1,4 @@
-(ns ardoq-swagger.private
-  (:import (clojure.lang IFn AFn)))
+(ns ardoq-swagger.private)
   
 (defrecord Route [path method info children])
 
