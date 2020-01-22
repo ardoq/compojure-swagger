@@ -95,18 +95,21 @@
 
 ; TODO: Clean up destructuring
 (defn- swagify-verb [verb]
-  (let [{{desc :description summary :summary
+  (let [{{desc :description summary :summary transformer :transformer
           {:keys [spec description]} :response
           {:keys [path-par body]} :parameters} :swagger
-         :keys [path method]} verb]
-    (swagger/swagger-spec {(str path)
-                           {method
-                            {:summary             summary :description desc
-                             ::swagger/parameters {:path path-par
-                                                   :body body}
-                             ::swagger/responses  {200 {:schema      spec
-                                                        :description description}}}}})))
+         :keys [path method]} verb
+        transformer (if transformer transformer identity)]
+    (transformer
+      (swagger/swagger-spec {(str path)
+                             {method
+                              {:summary             summary :description desc
+                               ::swagger/parameters {:path path-par
+                                                     :body body}
+                               ::swagger/responses  {200 {:schema      spec
+                                                          :description description}}}}}))))
 
+;; TODO: Handle with-swagger for routes and context
 (defn- swagify-route [route]
   (if-let [children (:children route)]
     ;; Children -> Routes or context
