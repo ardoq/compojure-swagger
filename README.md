@@ -16,7 +16,7 @@ Don't
 
 ## Errors
 
-This thing completely breaks if you create cross-namespace closures, or even if your routes/contexts consist of variables.
+This thing completely breaks if you create cross-namespace closures, or if your routes/contexts consist of variables.
 
 ex:
 ```clojure
@@ -24,7 +24,7 @@ ex:
 
 (context "path" req verb)
 ```
-Will not work, as verb will not be able to resolve the req reference. This is pretty awful and makes the library kind of completely unusuable as of right now. We're probably gonna use `delay` or something to fix it. 
+Will not work, as verb will not be able to resolve the req reference. However, we don't think this works in regular compojure either, and we're not sure this is even a legitimate use case.
 
 
 ## License
