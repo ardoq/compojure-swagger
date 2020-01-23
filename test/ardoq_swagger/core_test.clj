@@ -120,8 +120,8 @@
 
 (deftest transformer-test
   (testing "with-swagger transformer works as expected"
-    (let [test-key (s/def ::first-name string?)
-          test-spec (s/keys :req [::first-name])
+    (s/def ::first-name string?)
+    (let [test-spec (s/keys :req [::first-name])
           transformer (fn camelize-first-name [x] (-> x
                                                       (assoc-in ["/test1" :get :responses 200 :schema :properties]
                                                                 {"firstName" {:type "string"}})
