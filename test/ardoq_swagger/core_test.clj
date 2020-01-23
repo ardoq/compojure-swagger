@@ -14,7 +14,7 @@
       (is (= (swagify-route ctx)
              {"/top/bottom" {:get {:summary                            nil,
                                    :description                        nil,
-                                   :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                                   :parameters [],
                                    :responses  {200 {:schema nil, :description ""}}}}})))))
 
 (deftest swagify-nested-context-test
@@ -25,7 +25,7 @@
       (is (= (swagify-route ctx)
              {"/top/mid/bot" {:get {:summary                            nil,
                                     :description                        nil,
-                                    :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                                    :parameters [],
                                     :responses  {200 {:schema nil, :description ""}}}}})))))
 
 (deftest swagger-routes-test
@@ -36,11 +36,11 @@
       (is (= (swagify-route handler)
              {"/test1" {:get {:summary                            nil,
                               :description                        nil,
-                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                              :parameters [],
                               :responses  {200 {:schema nil, :description ""}}}},
               "/test2" {:get {:summary                            nil,
                               :description                        nil,
-                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                              :parameters [],
                               :responses  {200 {:schema nil, :description ""}}}}})))))
 
 (deftest routes-test
@@ -90,13 +90,13 @@
     (s/def ::id int?)
     (let [id-spec (s/keys :req-un [::id])
           test-spec (s/keys :req [::first-name] :opt [::last-name])
-          handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary     "it works"
+          handler (swagger/with-swagger (swagger/POST "/test1" []) {:summary     "it works"
                                                                    :parameters  {:path-par id-spec
                                                                                  :body     test-spec}
                                                                    :response    {:spec test-spec}})]
 
       (is (= (swagify-route handler)
-             {"/test1" {:get {:summary "it works",
+             {"/test1" {:post {:summary "it works",
                               :description nil,
                               :parameters [{:in "path",
                                             :name "id",
@@ -118,6 +118,15 @@
                                                         :required ["ardoq-swagger.core-test/first-name"]},
                                                :description ""}}}}})))))
 
+(deftest with-swagger-get-test
+  (testing "with-swagger doesn't create a required body when none is specified"
+    (let [handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works" })]
+      (is (= (swagify-route handler)
+             {"/test1" {:get {:summary "it works",
+                              :description nil,
+                              :parameters [],
+                              :responses {200 {:schema nil, :description ""}}}}})))))
+
 (deftest transformer-test
   (testing "with-swagger transformer works as expected"
     (s/def ::first-name string?)
@@ -133,7 +142,7 @@
       (is (= (swagify-route handler)
              {"/test1" {:get {:summary "it works",
                               :description nil,
-                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
+                              :parameters [],
                               :responses {200 {:schema {:type "object",
                                                         :properties {"firstName" {:type "string"}},
                                                         :required ["firstName"]},

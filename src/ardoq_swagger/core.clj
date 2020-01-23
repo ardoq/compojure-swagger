@@ -104,8 +104,8 @@
       (swagger/swagger-spec {(str path)
                              {method
                               {:summary             summary :description desc
-                               ::swagger/parameters {:path path-par
-                                                     :body body}
+                               ::swagger/parameters (merge {:path path-par}
+                                                           (if body {:body body} {}))
                                ::swagger/responses  {200 {:schema      spec
                                                           :description description}}}}}))))
 
