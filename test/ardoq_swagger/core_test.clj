@@ -80,19 +80,43 @@
                                                            {:really "does"}))
                     {:it "works"})]
       (is (= "works" (get-in handler [:swagger :it])))
-      (is (= "does" (get-in (first (:children handler)) [:swagger :really])))
-      )))
+      (is (= "does" (get-in (first (:children handler)) [:swagger :really]))))))
+
 
 (deftest with-swagger-swagify-test
-  (testing "with-swagger swagifying works as expected"
-    (let [test-spec (s/def ::test-spec string?)
-          handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works"
-                                                                   :response {:spec test-spec}})]
+  (testing "with-swagger swagifies specs as expected"
+    (s/def ::first-name string?)
+    (s/def ::last-name string?)
+    (s/def ::id int?)
+    (let [id-spec (s/keys :req-un [::id])
+          test-spec (s/keys :req [::first-name] :opt [::last-name])
+          handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary     "it works"
+                                                                   :parameters  {:path-par id-spec
+                                                                                 :body     test-spec}
+                                                                   :response    {:spec test-spec}})]
+
       (is (= (swagify-route handler)
-             {"/test1" {:get {:summary                            "it works" ,
-                              :description                        nil,
-                              :parameters [{:in "body", :name "", :description "", :required true, :schema {}}],
-                              :responses  {200 {:schema {:type "string"}, :description ""}}}}})))))
+             {"/test1" {:get {:summary "it works",
+                              :description nil,
+                              :parameters [{:in "path",
+                                            :name "id",
+                                            :description "",
+                                            :type "integer",
+                                            :required true,
+                                            :format "int64"}
+                                           {:in "body",
+                                            :name "",
+                                            :description "",
+                                            :required true,
+                                            :schema {:type "object",
+                                                     :properties {"ardoq-swagger.core-test/first-name" {:type "string"},
+                                                                  "ardoq-swagger.core-test/last-name" {:type "string"}},
+                                                     :required ["ardoq-swagger.core-test/first-name"]}}],
+                              :responses {200 {:schema {:type "object",
+                                                        :properties {"ardoq-swagger.core-test/first-name" {:type "string"},
+                                                                     "ardoq-swagger.core-test/last-name" {:type "string"}},
+                                                        :required ["ardoq-swagger.core-test/first-name"]},
+                                               :description ""}}}}})))))
 
 (deftest transformer-test
   (testing "with-swagger transformer works as expected"
