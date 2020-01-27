@@ -5,6 +5,7 @@
             [ring.mock.request :as mock]))
 
 (def swagify-route #'swagger/swagify-route)
+(def swagify-verb #'swagger/swagify-verb)
 
 ;; TODO: With-swagger test
 (deftest swagger-context-test
@@ -84,39 +85,40 @@
 
 
 (deftest with-swagger-swagify-test
-  (testing "with-swagger swagifies specs as expected"
-    (s/def ::first-name string?)
-    (s/def ::last-name string?)
-    (s/def ::id int?)
-    (let [id-spec (s/keys :req-un [::id])
-          test-spec (s/keys :req [::first-name] :opt [::last-name])
-          handler (swagger/with-swagger (swagger/POST "/test1" []) {:summary     "it works"
-                                                                   :parameters  {:path-par id-spec
-                                                                                 :body     test-spec}
-                                                                   :response    {:spec test-spec}})]
-
-      (is (= (swagify-route handler)
-             {"/test1" {:post {:summary "it works",
-                              :description nil,
-                              :parameters [{:in "path",
-                                            :name "id",
-                                            :description "",
-                                            :type "integer",
-                                            :required true,
-                                            :format "int64"}
-                                           {:in "body",
-                                            :name "",
-                                            :description "",
-                                            :required true,
-                                            :schema {:type "object",
-                                                     :properties {"ardoq-swagger.core-test/first-name" {:type "string"},
-                                                                  "ardoq-swagger.core-test/last-name" {:type "string"}},
-                                                     :required ["ardoq-swagger.core-test/first-name"]}}],
-                              :responses {200 {:schema {:type "object",
-                                                        :properties {"ardoq-swagger.core-test/first-name" {:type "string"},
-                                                                     "ardoq-swagger.core-test/last-name" {:type "string"}},
-                                                        :required ["ardoq-swagger.core-test/first-name"]},
-                                               :description ""}}}}})))))
+  (s/def ::first-name string?)
+  (s/def ::last-name string?)
+  (s/def ::id int?)
+  (let [id-spec (s/keys :req [::id])
+        test-spec (s/keys :req [::first-name] :opt [::last-name])
+        handler (swagger/with-swagger (swagger/POST "/test1/:id" []) {:summary    "it works"
+                                                                      :parameters {:path-par id-spec
+                                                                                   :body     test-spec}
+                                                                      :response   {:spec test-spec}})
+        expected-swagger {"/test1/:id" {:post {:summary     "it works",
+                                               :description nil,
+                                               :parameters  [{:in          "path",
+                                                              :name        "id",
+                                                              :description "",
+                                                              :type        "integer",
+                                                              :required    true,
+                                                              :format      "int64"}
+                                                             {:in          "body",
+                                                              :name        "",
+                                                              :description "",
+                                                              :required    true,
+                                                              :schema      {:type       "object",
+                                                                            :properties {"first-name" {:type "string"},
+                                                                                         "last-name"  {:type "string"}},
+                                                                            :required   ["first-name"]}}],
+                                               :responses   {200 {:schema      {:type       "object",
+                                                                                :properties {"first-name" {:type "string"},
+                                                                                             "last-name"  {:type "string"}},
+                                                                                :required   ["first-name"]},
+                                                                  :description ""}}}}}]
+    (testing "with-swagger swagifies specs as expected"
+      (is (= (swagify-route handler) expected-swagger)))
+    (testing "swagify-verb swagifies verbs as expected"
+      (is (= (swagify-verb handler) expected-swagger)))))
 
 (deftest with-swagger-get-test
   (testing "with-swagger doesn't create a required body when none is specified"
@@ -157,12 +159,12 @@
 (deftest swagger-spec-test
   (testing "top-level swagger-spec function works as expected"
     (let [handler (swagger/routes
-                    (swagger/GET "/test1" [])
+                    (swagger/GET "/test1/:id" [])
                     (swagger/GET "/test2" []))]
       (is (= (swagger/swagger-spec swagger/swagger-default handler)
              {:swagger "2.0",
               :info {:version "0.0.1", :title "API Docs example", :description "Docs for the API"},
-              :paths {"/test1" {:get {:summary nil,
+              :paths {"/test1/{id}" {:get {:summary nil,
                                       :description nil,
                                       :parameters [],
                                       :responses {200 {:schema nil, :description ""}}}},
