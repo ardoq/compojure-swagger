@@ -5,7 +5,7 @@
             [ring.swagger.swagger-ui :as ui]
             [ardoq-swagger.private]
             [spec-tools.swagger.core :as swagger]
-            [clojure.walk :as walk])
+            [ardoq-swagger.util :as util])
   (:import (clojure.lang IFn AFn)))
 
 (def swagger-private "ardoq-swagger.private")
@@ -94,22 +94,6 @@
                 :children (list ~@(unhandle-children body))
                 :handler  (cc/context ~path ~args ~@(handlerify body))}))
 
-(defn strip-namespace [s] (if (string? s) (name (symbol s)) s))
-
-(defn remove-spec-namespaces
-  "Remove leading namespaces in spec names"
-  [swagger-spec]
-  (walk/postwalk (fn [form] (-> form
-                                (#(if-let [name (:name %)]
-                                    (assoc % :name (strip-namespace name)) %))
-                                (#(if-let [required (get-in % [:schema :required])]
-                                    (assoc-in % [:schema :required] (->> required (map strip-namespace) vec)) %))
-                                (#(if-let [properties (get-in % [:schema :properties])]
-                                    (assoc-in % [:schema :properties]
-                                              (reduce-kv
-                                                (fn [m k v]
-                                                  (assoc m (strip-namespace k) v)) {} properties)) %))))
-                 swagger-spec))
 
 ; TODO: Clean up destructuring
 (defn- swagify-verb [verb]
@@ -125,7 +109,7 @@
                                                              (if body {:body body} {}))
                                  ::swagger/responses  {200 {:schema      spec
                                                             :description description}}}}})
-        remove-spec-namespaces
+        util/remove-spec-namespaces
         transformer)))
 
 ;; TODO: Handle with-swagger for routes and context
