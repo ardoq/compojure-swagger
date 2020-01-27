@@ -147,3 +147,26 @@
                                                         :properties {"firstName" {:type "string"}},
                                                         :required ["firstName"]},
                                                :description ""}}}}})))))
+
+(deftest fix-params-in-path-test
+  (testing "fix-params-in-path works as expected"
+    (let [path "/test/:id/hmm/:name"]
+      (is (= (swagger/fix-params-in-path path)
+             "/test/{id}/hmm/{name}")))))
+
+(deftest swagger-spec-test
+  (testing "top-level swagger-spec function works as expected"
+    (let [handler (swagger/routes
+                    (swagger/GET "/test1" [])
+                    (swagger/GET "/test2" []))]
+      (is (= (swagger/swagger-spec swagger/swagger-default handler)
+             {:swagger "2.0",
+              :info {:version "0.0.1", :title "API Docs example", :description "Docs for the API"},
+              :paths {"/test1" {:get {:summary nil,
+                                      :description nil,
+                                      :parameters [],
+                                      :responses {200 {:schema nil, :description ""}}}},
+                      "/test2" {:get {:summary nil,
+                                      :description nil,
+                                      :parameters [],
+                                      :responses {200 {:schema nil, :description ""}}}}}})))))

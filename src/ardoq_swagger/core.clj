@@ -35,7 +35,7 @@
   [verb path args body]
   `(map->Route {:path    ~path
                 :method  ~verb
-                :handler ~(cc/compile-route verb path args body)})) 
+                :handler ~(cc/compile-route verb path args body)}))
 (defmacro GET
   [path args & body]
   (make-verb-route :get path args body))
@@ -52,7 +52,7 @@
   [path args & body]
   (make-verb-route :any path args body))
 
-(defn- is-verb? 
+(defn- is-verb?
   "is elem HTTP verb"
   [elem]
   (some #(= elem %) ["GET" "POST" "PUT" "DELETE" "ANY"])) ; XXX: Symbol or string?
@@ -133,6 +133,27 @@
          :description description}))
           }))
 
+(defn fix-params-in-path
+  "Replace a path param such as /:id with corresponding /{id}"
+  [path]
+  (clojure.string/replace path #"\/\:([^\/]*)" "/{$1}"))
+
+(defn fix-paths
+  "Replace all path params under :paths such as /:id/:name with corresponding /{id}/{name}"
+  [swagger-spec]
+  (assoc swagger-spec :paths (reduce-kv
+                               (fn [m k v]
+                                 (assoc m (fix-params-in-path k) v))
+                               {} (:paths swagger-spec))))
+
+(defn swagger-spec [options swag-routes]
+  (-> (swagger/swagger-spec
+        (merge
+          {:swagger "2.0"}
+          options
+          {:paths (swagify-route swag-routes)}))
+      fix-paths))
+
 (defn swagger-api
   "Create an endpoint which contains swagger docs for swag-routes"
   [options swag-routes]
@@ -142,8 +163,6 @@
     (cc/GET "/swagger.json" {}
             (resource :available-media-types ["application/json"]
                       :handle-ok
-                      (swagger/swagger-spec
-                        (merge
-                          {:swagger "2.0"}
-                          (rsc/deep-merge swagger-default (swagify-options options))
-                          {:paths (swagify-route swag-routes)}))))))
+                      (swagger-spec
+                        (rsc/deep-merge swagger-default (swagify-options options))
+                        swag-routes)))))
