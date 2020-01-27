@@ -96,7 +96,7 @@
 
 
 ; TODO: Clean up destructuring
-(defn- swagify-verb [verb]
+(defn swagify-verb [verb]
   (let [{{desc :description summary :summary transformer :transformer
           {:keys [spec description]} :response
           {:keys [path-par body]} :parameters} :swagger
@@ -113,7 +113,7 @@
         transformer)))
 
 ;; TODO: Handle with-swagger for routes and context
-(defn- swagify-route [route]
+(defn swagify-route [route]
   (if-let [children (:children route)]
     ;; Children -> Routes or context
     (let [new-route (assoc route :children (map swagify-route children))
