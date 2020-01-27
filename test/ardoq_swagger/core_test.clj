@@ -2,7 +2,8 @@
   (:require [clojure.test :refer :all]
             [ardoq-swagger.core :refer [routes context GET POST PUT DELETE ANY] :as swagger]
             [clojure.spec.alpha :as s]
-            [ring.mock.request :as mock]))
+            [ring.mock.request :as mock]
+            [spec-tools.core :as st]))
 
 (def swagify-route #'swagger/swagify-route)
 (def swagify-verb #'swagger/swagify-verb)
@@ -13,10 +14,10 @@
     (let [ctx (swagger/context "/top" []
                                (swagger/GET "/bottom" [] nil))]
       (is (= (swagify-route ctx)
-             {"/top/bottom" {:get {:summary                            nil,
-                                   :description                        nil,
-                                   :parameters [],
-                                   :responses  {200 {:schema nil, :description ""}}}}})))))
+             {"/top/bottom" {:get {:summary     nil,
+                                   :description nil,
+                                   :parameters  [],
+                                   :responses   {200 {:schema nil, :description ""}}}}})))))
 
 (deftest swagify-nested-context-test
   (testing "nesting contexts works as expected"
@@ -24,10 +25,10 @@
                                (swagger/context "/mid" []
                                                 (swagger/GET "/bot" [] nil)))]
       (is (= (swagify-route ctx)
-             {"/top/mid/bot" {:get {:summary                            nil,
-                                    :description                        nil,
-                                    :parameters [],
-                                    :responses  {200 {:schema nil, :description ""}}}}})))))
+             {"/top/mid/bot" {:get {:summary     nil,
+                                    :description nil,
+                                    :parameters  [],
+                                    :responses   {200 {:schema nil, :description ""}}}}})))))
 
 (deftest swagger-routes-test
   (testing "swagifying routes works as expected"
@@ -35,14 +36,14 @@
                     (swagger/GET "/test1" [])
                     (swagger/GET "/test2" []))]
       (is (= (swagify-route handler)
-             {"/test1" {:get {:summary                            nil,
-                              :description                        nil,
-                              :parameters [],
-                              :responses  {200 {:schema nil, :description ""}}}},
-              "/test2" {:get {:summary                            nil,
-                              :description                        nil,
-                              :parameters [],
-                              :responses  {200 {:schema nil, :description ""}}}}})))))
+             {"/test1" {:get {:summary     nil,
+                              :description nil,
+                              :parameters  [],
+                              :responses   {200 {:schema nil, :description ""}}}},
+              "/test2" {:get {:summary     nil,
+                              :description nil,
+                              :parameters  [],
+                              :responses   {200 {:schema nil, :description ""}}}}})))))
 
 (deftest routes-test
   (testing "routes works as expected"
@@ -78,8 +79,8 @@
   (testing "with-swagger works as expected"
     (let [handler (swagger/with-swagger (swagger/context "/test1" []
                                                          (swagger/with-swagger (GET "test" [] nil)
-                                                           {:really "does"}))
-                    {:it "works"})]
+                                                                               {:really "does"}))
+                                        {:it "works"})]
       (is (= "works" (get-in handler [:swagger :it])))
       (is (= "does" (get-in (first (:children handler)) [:swagger :really]))))))
 
@@ -122,12 +123,12 @@
 
 (deftest with-swagger-get-test
   (testing "with-swagger doesn't create a required body when none is specified"
-    (let [handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works" })]
+    (let [handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works"})]
       (is (= (swagify-route handler)
-             {"/test1" {:get {:summary "it works",
+             {"/test1" {:get {:summary     "it works",
                               :description nil,
-                              :parameters [],
-                              :responses {200 {:schema nil, :description ""}}}}})))))
+                              :parameters  [],
+                              :responses   {200 {:schema nil, :description ""}}}}})))))
 
 (deftest transformer-test
   (testing "with-swagger transformer works as expected"
@@ -138,17 +139,17 @@
                                                                 {"firstName" {:type "string"}})
                                                       (assoc-in ["/test1" :get :responses 200 :schema :required]
                                                                 ["firstName"])))
-          handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works"
-                                                                   :response {:spec test-spec}
+          handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary     "it works"
+                                                                   :response    {:spec test-spec}
                                                                    :transformer transformer})]
       (is (= (swagify-route handler)
-             {"/test1" {:get {:summary "it works",
+             {"/test1" {:get {:summary     "it works",
                               :description nil,
-                              :parameters [],
-                              :responses {200 {:schema {:type "object",
-                                                        :properties {"firstName" {:type "string"}},
-                                                        :required ["firstName"]},
-                                               :description ""}}}}})))))
+                              :parameters  [],
+                              :responses   {200 {:schema      {:type       "object",
+                                                               :properties {"firstName" {:type "string"}},
+                                                               :required   ["firstName"]},
+                                                 :description ""}}}}})))))
 
 (deftest fix-params-in-path-test
   (testing "fix-params-in-path works as expected"
@@ -163,12 +164,34 @@
                     (swagger/GET "/test2" []))]
       (is (= (swagger/swagger-spec swagger/swagger-default handler)
              {:swagger "2.0",
-              :info {:version "0.0.1", :title "API Docs example", :description "Docs for the API"},
-              :paths {"/test1/{id}" {:get {:summary nil,
-                                      :description nil,
-                                      :parameters [],
-                                      :responses {200 {:schema nil, :description ""}}}},
-                      "/test2" {:get {:summary nil,
-                                      :description nil,
-                                      :parameters [],
-                                      :responses {200 {:schema nil, :description ""}}}}}})))))
+              :info    {:version "0.0.1", :title "API Docs example", :description "Docs for the API"},
+              :paths   {"/test1/{id}" {:get {:summary     nil,
+                                             :description nil,
+                                             :parameters  [],
+                                             :responses   {200 {:schema nil, :description ""}}}},
+                        "/test2"      {:get {:summary     nil,
+                                             :description nil,
+                                             :parameters  [],
+                                             :responses   {200 {:schema nil, :description ""}}}}}})))))
+
+(deftest spec-tools-test
+  (testing "spec-tools/merge works"
+    (s/def ::first-name string?)
+    (s/def ::last-name string?)
+    (s/def ::id int?)
+    (s/def ::person-spec (s/keys :req [::first-name ::last-name]))
+    (s/def ::identifiable (s/keys :req [::id]))
+    (let [handler (swagger/with-swagger
+                    (swagger/POST "/test1/:id" [])
+                    {:summary  "it works"
+                     :response {:spec (st/merge ::person-spec ::identifiable)}})]
+      (is (= (swagify-route handler)
+             {"/test1/:id" {:post {:summary "it works",
+                                   :description nil,
+                                   :parameters [],
+                                   :responses {200 {:schema {:type "object",
+                                                             :properties {"first-name" {:type "string"},
+                                                                          "last-name" {:type "string"},
+                                                                          "id" {:type "integer", :format "int64"}},
+                                                             :required ["first-name" "id" "last-name"]},
+                                                    :description ""}}}}})))))
