@@ -1,18 +1,38 @@
-# ardoq-swagger
+# compojure-swagger
 
-A Clojure library designed to generate swagger documentation for compojure API's.
+A Clojure library designed to generate swagger documentation (openapi 2.0) for compojure API's.
 
-Provides new macros for HTTP verbs (GET, POST, ...), routes, context.
+Provides new macros for HTTP verbs (GET, POST, ...), routes and context.
 
 Also provides a top-level function, `swagger-api`, to generate a swagger.json file + serve it via swagger-ui.
 
-Based on compojure, spec-tools and ring-swagger. This library aims to allow for swagger-dos generation like compojure-api does, but without all the other functionality.
-
+Based on compojure, spec-tools and ring-swagger.
+This library aims to allow for swagger-docs generation like [compojure-api](https://github.com/metosin/compojure-api) does,
+but without all the other functionality, such as coercion and bidirectional routing.
 
 ## Usage
+### Simple example
+```clojure
+(ns hello-world.core
+  (:require [compojure-swagger :refer :all]
+            [hello-world.my-specs :refer [some-spec]]
+            [hello-world.my-handlers :refer [some-handler]]))
 
-Don't
-
+(def app
+  (routes
+    (swagger-api
+      {:path "/api-docs"
+       :version "0.1"
+       :title "The best API in the world"}
+      (context "/api" []
+        (with-swagger
+          (GET "/" [] "<h1>Hello World</h1>")
+          {:summary  "Example endpoint"})
+        (with-swagger
+          (POST "/" request (some-handler request)
+          {:summary "Example point endpoint"
+           :parameters {:body some-spec}}))))))
+```
 
 ## Errors
 
