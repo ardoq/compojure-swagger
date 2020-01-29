@@ -142,7 +142,7 @@
 
 (defn fix-params-in-path
   "Replace a path param such as /:id with corresponding /{id}"
-  [paths]
+  [path]
   (clojure.string/replace path #"\/\:([^\/]*)" "/{$1}"))
 
 (defn fix-paths
