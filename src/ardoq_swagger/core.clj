@@ -103,20 +103,12 @@
                 :handler  (cc/context ~path ~args ~@(handlerify body))}))
 
 
-; TODO: Clean up destructuring
 (defn swagify-verb [verb]
   (let [{:keys [swagger path method]} verb
-        {desc :description summary :summary transformer :transformer
-         {:keys [spec description]} :response
-         {:keys [path-par body]} :parameters} swagger
+        {:keys [swagger-content transformer]} swagger
         transformer (if transformer transformer identity)]
-    (if (some? swagger) (-> (swagger/swagger-spec {(str path)
-                                                   {method
-                                                    {:summary             (str summary) :description (str desc)
-                                                     ::swagger/parameters (merge {:path path-par}
-                                                                                 (if body {:body body} {}))
-                                                     ::swagger/responses  {200 {:schema      spec
-                                                                                :description (str description)}}}}})
+    (if (some? swagger-content) (-> (swagger/swagger-spec {(str path)
+                                                   {method swagger-content}})
                             util/remove-spec-namespaces
                             transformer))))
 
