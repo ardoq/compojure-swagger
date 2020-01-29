@@ -8,11 +8,10 @@
 (def swagify-route #'swagger/swagify-route)
 (def swagify-verb #'swagger/swagify-verb)
 
-;; TODO: With-swagger test
 (deftest swagger-context-test
   (testing "context prepends path ok when swagifying"
     (let [ctx (swagger/context "/top" []
-                               (swagger/GET "/bottom" [] nil))]
+                               (swagger/with-swagger (swagger/GET "/bottom" [] nil) {}))]
       (is (= (swagify-route ctx)
              {"/top/bottom" {:get {:summary     nil,
                                    :description nil,
@@ -23,7 +22,7 @@
   (testing "nesting contexts works as expected"
     (let [ctx (swagger/context "/top" []
                                (swagger/context "/mid" []
-                                                (swagger/GET "/bot" [] nil)))]
+                                                (swagger/with-swagger (swagger/GET "/bot" [] nil) {})))]
       (is (= (swagify-route ctx)
              {"/top/mid/bot" {:get {:summary     nil,
                                     :description nil,
@@ -33,8 +32,8 @@
 (deftest swagger-routes-test
   (testing "swagifying routes works as expected"
     (let [handler (swagger/routes
-                    (swagger/GET "/test1" [])
-                    (swagger/GET "/test2" []))]
+                    (swagger/with-swagger (swagger/GET "/test1" []) {})
+                    (swagger/with-swagger (swagger/GET "/test2" []) {}))]
       (is (= (swagify-route handler)
              {"/test1" {:get {:summary     nil,
                               :description nil,
@@ -82,7 +81,19 @@
                                                                                {:really "does"}))
                                         {:it "works"})]
       (is (= "works" (get-in handler [:swagger :it])))
-      (is (= "does" (get-in (first (:children handler)) [:swagger :really]))))))
+      (is (= "does" (get-in (first (:children handler)) [:swagger :really])))))
+  (testing "verbs without with-swagger do not get added to doc"
+    (let [no-paths-swagger (swagger/swagger-spec
+                         swagger/swagger-default
+                         (swagger/context "/test1" []
+                                          (GET "/test" [] nil)))
+          one-path-swagger (swagger/swagger-spec
+                             swagger/swagger-default
+                             (swagger/context "/test1" []
+                                              (swagger/with-swagger (GET "/doc" [] nil) {})
+                                              (GET "/no-doc" [] nil)))]
+      (is (= (count (:paths no-paths-swagger)) 0))
+      (is (= (count (:paths one-path-swagger)) 1)))))
 
 
 (deftest with-swagger-swagify-test
@@ -160,8 +171,8 @@
 (deftest swagger-spec-test
   (testing "top-level swagger-spec function works as expected"
     (let [handler (swagger/routes
-                    (swagger/GET "/test1/:id" [])
-                    (swagger/GET "/test2" []))]
+                    (swagger/with-swagger (swagger/GET "/test1/:id" []) {})
+                    (swagger/with-swagger (swagger/GET "/test2" []) {}))]
       (is (= (swagger/swagger-spec swagger/swagger-default handler)
              {:swagger "2.0",
               :info    {:version "0.0.1", :title "API Docs example", :description "Docs for the API"},

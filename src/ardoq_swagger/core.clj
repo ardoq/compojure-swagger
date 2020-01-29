@@ -33,6 +33,7 @@
 
 (defn with-swagger [route swagger]
   (assoc route :swagger swagger))
+
 (defn- make-verb-route
   [verb path args body]
   `(map->Route {:path    ~path
@@ -104,31 +105,31 @@
 
 ; TODO: Clean up destructuring
 (defn swagify-verb [verb]
-  (let [{{desc :description summary :summary transformer :transformer
-          {:keys [spec description]} :response
-          {:keys [path-par body]} :parameters} :swagger
-         :keys [path method]} verb
+  (let [{:keys [swagger path method]} verb
+        {desc :description summary :summary transformer :transformer
+         {:keys [spec description]} :response
+         {:keys [path-par body]} :parameters} swagger
         transformer (if transformer transformer identity)]
-    (-> (swagger/swagger-spec {(str path)
-                               {method
-                                {:summary             summary :description desc
-                                 ::swagger/parameters (merge {:path path-par}
-                                                             (if body {:body body} {}))
-                                 ::swagger/responses  {200 {:schema      spec
-                                                            :description description}}}}})
-        util/remove-spec-namespaces
-        transformer)))
+    (if (some? swagger) (-> (swagger/swagger-spec {(str path)
+                                                   {method
+                                                    {:summary             summary :description desc
+                                                     ::swagger/parameters (merge {:path path-par}
+                                                                                 (if body {:body body} {}))
+                                                     ::swagger/responses  {200 {:schema      spec
+                                                                                :description description}}}}})
+                            util/remove-spec-namespaces
+                            transformer))))
 
 ;; TODO: Handle with-swagger for routes and context
 (defn swagify-route [route]
   (if-let [children (:children route)]
     ;; Children -> Routes or context
-    (let [new-route (assoc route :children (map swagify-route children))
+    (let [new-route (assoc route :children (keep swagify-route children))
           ;; Merge children which share paths
           new-children (apply rsc/deep-merge (:children new-route))]
       (if-let [context-path (:path route)]
         ;; Context, prepend to path
-        (into {} (map (fn [[path body]] {(str context-path path) body}) new-children))
+        (into {} (keep (fn [[path body]] {(str context-path path) body}) new-children))
         ;; Routes
         new-children))
     ;; No children -> HTTP verb
