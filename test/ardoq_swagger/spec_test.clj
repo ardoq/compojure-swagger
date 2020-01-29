@@ -17,7 +17,7 @@
                      :response {:spec (st/merge ::person-spec ::identifiable)}})]
       (is (= (swagger/swagify-route handler)
              {"/test1/:id" {:post {:summary "it works",
-                                   :description nil,
+                                   :description "",
                                    :parameters [],
                                    :responses {200 {:schema {:type "object",
                                                              :properties {"first-name" {:type "string"},

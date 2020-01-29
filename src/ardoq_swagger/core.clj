@@ -27,9 +27,9 @@
     (AFn/applyToHelper this args)))
 
 (def swagger-default
-  {:info  {:version     "0.0.1"
-           :title       "API Docs example"
-           :description "Docs for the API"}})
+  {:info {:version     "0.0.1"
+          :title       "API Docs example"
+          :description "Docs for the API"}})
 
 (defn with-swagger [route swagger]
   (assoc route :swagger swagger))
@@ -70,8 +70,8 @@
   "If child is valid, don't let it have a handler"
   [children]
   (map #(cond
-          (-> % first name (= "routes")) (apply list (->> % first name (symbol swagger-private)) (unhandle-children (rest %))); Nested body
-          (-> % first name (= "context")) (apply list (->> % first name (symbol swagger-private)) (nth % 1) (nth % 2) (unhandle-children (nthrest % 3))); Nested body
+          (-> % first name (= "routes")) (apply list (->> % first name (symbol swagger-private)) (unhandle-children (rest %))) ; Nested body
+          (-> % first name (= "context")) (apply list (->> % first name (symbol swagger-private)) (nth % 1) (nth % 2) (unhandle-children (nthrest % 3))) ; Nested body
           (-> % first name verb?) (-> % vec
                                       (assoc 0 (->> % first name (symbol swagger-private)))
                                       seq)
@@ -79,11 +79,11 @@
           :else %) children))
 
 (defn- handlerify
-"Recursively swap out valid forms for compojure versions"
+  "Recursively swap out valid forms for compojure versions"
   [handlers]
   (map #(cond
-          (-> % first name (= "routes")) (apply list (->> % first name (symbol compojure-core)) (handlerify (rest %))); Nested body
-          (-> % first name (= "context")) (apply list (->> % first name (symbol compojure-core)) (nth % 1) (nth % 2) (handlerify (nthrest % 3))); Nested body
+          (-> % first name (= "routes")) (apply list (->> % first name (symbol compojure-core)) (handlerify (rest %))) ; Nested body
+          (-> % first name (= "context")) (apply list (->> % first name (symbol compojure-core)) (nth % 1) (nth % 2) (handlerify (nthrest % 3))) ; Nested body
           (verb? (-> % first name)) (-> % vec
                                         (assoc 0 (->> % first name (symbol compojure-core)))
                                         seq)
@@ -92,7 +92,7 @@
 
 (defmacro routes [& handlers]
   `(map->Route
-     {:path nil
+     {:path     nil
       :children (list ~@(unhandle-children handlers))
       :handler  (cc/routes ~@(handlerify handlers))}))
 
@@ -112,11 +112,11 @@
         transformer (if transformer transformer identity)]
     (if (some? swagger) (-> (swagger/swagger-spec {(str path)
                                                    {method
-                                                    {:summary             summary :description desc
+                                                    {:summary             (str summary) :description (str desc)
                                                      ::swagger/parameters (merge {:path path-par}
                                                                                  (if body {:body body} {}))
                                                      ::swagger/responses  {200 {:schema      spec
-                                                                                :description description}}}}})
+                                                                                :description (str description)}}}}})
                             util/remove-spec-namespaces
                             transformer))))
 
@@ -137,12 +137,12 @@
 
 (defn- swagify-options [options]
   (let [{:keys [version title description]} options]
-     {:info
-      (into {} (filter second ; Remove nil values
-        {:version version
-         :title title
-         :description description}))
-          }))
+    {:info
+     (into {} (filter second                                ; Remove nil values
+                      {:version     version
+                       :title       title
+                       :description description}))
+     }))
 
 (defn fix-params-in-path
   "Replace a path param such as /:id with corresponding /{id}"
@@ -172,8 +172,8 @@
     swag-routes
     (ui/swagger-ui options)
     (cc/GET "/swagger.json" {}
-            (resource :available-media-types ["application/json"]
-                      :handle-ok
-                      (swagger-spec
-                        (rsc/deep-merge swagger-default (swagify-options options))
-                        swag-routes)))))
+      (resource :available-media-types ["application/json"]
+                :handle-ok
+                (swagger-spec
+                  (rsc/deep-merge swagger-default (swagify-options options))
+                  swag-routes)))))

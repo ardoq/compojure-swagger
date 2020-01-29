@@ -13,8 +13,8 @@
     (let [ctx (swagger/context "/top" []
                                (swagger/with-swagger (swagger/GET "/bottom" [] nil) {}))]
       (is (= (swagify-route ctx)
-             {"/top/bottom" {:get {:summary     nil,
-                                   :description nil,
+             {"/top/bottom" {:get {:summary     "",
+                                   :description "",
                                    :parameters  [],
                                    :responses   {200 {:schema nil, :description ""}}}}})))))
 
@@ -24,8 +24,8 @@
                                (swagger/context "/mid" []
                                                 (swagger/with-swagger (swagger/GET "/bot" [] nil) {})))]
       (is (= (swagify-route ctx)
-             {"/top/mid/bot" {:get {:summary     nil,
-                                    :description nil,
+             {"/top/mid/bot" {:get {:summary     "",
+                                    :description "",
                                     :parameters  [],
                                     :responses   {200 {:schema nil, :description ""}}}}})))))
 
@@ -35,12 +35,12 @@
                     (swagger/with-swagger (swagger/GET "/test1" []) {})
                     (swagger/with-swagger (swagger/GET "/test2" []) {}))]
       (is (= (swagify-route handler)
-             {"/test1" {:get {:summary     nil,
-                              :description nil,
+             {"/test1" {:get {:summary     "",
+                              :description "",
                               :parameters  [],
                               :responses   {200 {:schema nil, :description ""}}}},
-              "/test2" {:get {:summary     nil,
-                              :description nil,
+              "/test2" {:get {:summary     "",
+                              :description "",
                               :parameters  [],
                               :responses   {200 {:schema nil, :description ""}}}}})))))
 
@@ -84,9 +84,9 @@
       (is (= "does" (get-in (first (:children handler)) [:swagger :really])))))
   (testing "verbs without with-swagger do not get added to doc"
     (let [no-paths-swagger (swagger/swagger-spec
-                         swagger/swagger-default
-                         (swagger/context "/test1" []
-                                          (GET "/test" [] nil)))
+                             swagger/swagger-default
+                             (swagger/context "/test1" []
+                                              (GET "/test" [] nil)))
           one-path-swagger (swagger/swagger-spec
                              swagger/swagger-default
                              (swagger/context "/test1" []
@@ -107,7 +107,7 @@
                                                                                    :body     test-spec}
                                                                       :response   {:spec test-spec}})
         expected-swagger {"/test1/:id" {:post {:summary     "it works",
-                                               :description nil,
+                                               :description "",
                                                :parameters  [{:in          "path",
                                                               :name        "id",
                                                               :description "",
@@ -137,7 +137,7 @@
     (let [handler (swagger/with-swagger (swagger/GET "/test1" []) {:summary "it works"})]
       (is (= (swagify-route handler)
              {"/test1" {:get {:summary     "it works",
-                              :description nil,
+                              :description "",
                               :parameters  [],
                               :responses   {200 {:schema nil, :description ""}}}}})))))
 
@@ -155,7 +155,7 @@
                                                                    :transformer transformer})]
       (is (= (swagify-route handler)
              {"/test1" {:get {:summary     "it works",
-                              :description nil,
+                              :description "",
                               :parameters  [],
                               :responses   {200 {:schema      {:type       "object",
                                                                :properties {"firstName" {:type "string"}},
@@ -176,11 +176,11 @@
       (is (= (swagger/swagger-spec swagger/swagger-default handler)
              {:swagger "2.0",
               :info    {:version "0.0.1", :title "API Docs example", :description "Docs for the API"},
-              :paths   {"/test1/{id}" {:get {:summary     nil,
-                                             :description nil,
+              :paths   {"/test1/{id}" {:get {:summary     "",
+                                             :description "",
                                              :parameters  [],
                                              :responses   {200 {:schema nil, :description ""}}}},
-                        "/test2"      {:get {:summary     nil,
-                                             :description nil,
+                        "/test2"      {:get {:summary     "",
+                                             :description "",
                                              :parameters  [],
                                              :responses   {200 {:schema nil, :description ""}}}}}})))))
