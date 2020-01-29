@@ -135,15 +135,6 @@
     ;; No children -> HTTP verb
     (swagify-verb route)))
 
-(defn- swagify-options [options]
-  (let [{:keys [version title description]} options]
-    {:info
-     (into {} (filter second                                ; Remove nil values
-                      {:version     version
-                       :title       title
-                       :description description}))
-     }))
-
 (defn fix-params-in-path
   "Replace a path param such as /:id with corresponding /{id}"
   [path]
@@ -170,10 +161,10 @@
   [options swag-routes]
   (cc/routes
     swag-routes
-    (ui/swagger-ui options)
+    (ui/swagger-ui (:meta-options options))
     (cc/GET "/swagger.json" {}
       (resource :available-media-types ["application/json"]
                 :handle-ok
                 (swagger-spec
-                  (rsc/deep-merge swagger-default (swagify-options options))
+                  (rsc/deep-merge swagger-default (:swagger-options options))
                   swag-routes)))))
