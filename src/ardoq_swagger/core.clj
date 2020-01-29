@@ -57,7 +57,7 @@
   [path args & body]
   (make-verb-route :any path args body))
 
-(defn- is-verb?
+(defn- verb?
   "is elem HTTP verb"
   [elem]
   (some #(= elem %) ["GET" "POST" "PUT" "DELETE" "ANY"])) ; XXX: Symbol or string?
@@ -68,9 +68,9 @@
   (map #(cond
           (-> % first name (= "routes")) (apply list (->> % first name (symbol swagger-private)) (unhandle-children (rest %))); Nested body
           (-> % first name (= "context")) (apply list (->> % first name (symbol swagger-private)) (nth % 1) (nth % 2) (unhandle-children (nthrest % 3))); Nested body
-          (-> % first name is-verb?) (-> % vec
-                                            (assoc 0 (->> % first name (symbol swagger-private)))
-                                            seq)
+          (-> % first name verb?) (-> % vec
+                                      (assoc 0 (->> % first name (symbol swagger-private)))
+                                      seq)
           (= "with-swagger" (-> % first name)) (list (first %) (-> % second list unhandle-children first) (last %))
           :else %) children))
 
@@ -80,9 +80,9 @@
   (map #(cond
           (-> % first name (= "routes")) (apply list (->> % first name (symbol compojure-core)) (handlerify (rest %))); Nested body
           (-> % first name (= "context")) (apply list (->> % first name (symbol compojure-core)) (nth % 1) (nth % 2) (handlerify (nthrest % 3))); Nested body
-          (is-verb? (-> % first name)) (-> % vec
-                                           (assoc 0 (->> % first name (symbol compojure-core)))
-                                           seq)
+          (verb? (-> % first name)) (-> % vec
+                                        (assoc 0 (->> % first name (symbol compojure-core)))
+                                        seq)
           (= "with-swagger" (-> % first name)) (-> % second list handlerify first)
           :else %) handlers))
 
@@ -142,7 +142,7 @@
 
 (defn fix-params-in-path
   "Replace a path param such as /:id with corresponding /{id}"
-  [path]
+  [paths]
   (clojure.string/replace path #"\/\:([^\/]*)" "/{$1}"))
 
 (defn fix-paths
