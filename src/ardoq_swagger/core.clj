@@ -57,10 +57,12 @@
   [path args & body]
   (make-verb-route :any path args body))
 
+(def supported-verbs #{"GET" "POST" "PUT" "DELETE" "ANY"})
+
 (defn- verb?
   "is elem HTTP verb"
   [elem]
-  (some #(= elem %) ["GET" "POST" "PUT" "DELETE" "ANY"])) ; XXX: Symbol or string?
+  (supported-verbs elem))
 
 (defn- unhandle-children
   "If child is valid, don't let it have a handler"
