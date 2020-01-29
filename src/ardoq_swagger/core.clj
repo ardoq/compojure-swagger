@@ -5,6 +5,7 @@
             [ring.swagger.swagger-ui :as ui]
             [ardoq-swagger.private]
             [spec-tools.swagger.core :as swagger]
+            [clojure.string :as str]
             [ardoq-swagger.util :as util])
   (:import (clojure.lang IFn AFn)))
 
@@ -145,7 +146,7 @@
 (defn fix-params-in-path
   "Replace a path param such as /:id with corresponding /{id}"
   [path]
-  (clojure.string/replace path #"\/\:([^\/]*)" "/{$1}"))
+  (str/replace path #"\/\:([^\/]*)" "/{$1}"))
 
 (defn fix-paths
   "Replace all path params under :paths such as /:id/:name with corresponding /{id}/{name}"
