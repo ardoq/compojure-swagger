@@ -40,15 +40,19 @@
 (defmacro GET
   [path args & body]
   (make-verb-route :get path args body))
+
 (defmacro POST
   [path args & body]
   (make-verb-route :post path args body))
+
 (defmacro PUT
   [path args & body]
   (make-verb-route :put path args body))
+
 (defmacro DELETE
   [path args & body]
   (make-verb-route :delete path args body))
+
 (defmacro ANY
   [path args & body]
   (make-verb-route :any path args body))
