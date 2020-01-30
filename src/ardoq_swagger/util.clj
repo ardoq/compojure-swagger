@@ -8,6 +8,14 @@
     (apply update m k f args)
     m))
 
+(defn update-many-existing
+  "Like `update-many` but only if `m` contains `k`."
+  [m ks f & args]
+  (reduce
+    (fn [m' k] (apply update-some m' k f args))
+    m
+    ks))
+
 (defn transform-schema [schema transformer]
   (-> schema
       (update-some :required (partial mapv transformer))))
@@ -17,6 +25,8 @@
     (-> form
         (update-some :name transformer)
         (update-some :schema transform-schema transformer)
+        (update-some :x-anyOf (partial keep (fn [v] (update-some v :title transformer))))
+        (update-many-existing [:additionalProperties :schema :items] (partial (fn [v] (update-some v :title transformer))))
         (update-some :properties (partial reduce-kv
                                           (fn [m k v]
                                             (-> m
