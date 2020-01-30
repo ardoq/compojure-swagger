@@ -10,16 +10,18 @@
 
 (defn transform-schema [schema transformer]
   (-> schema
-      (update-some :required (partial mapv transformer))
-      (update-some :properties (partial reduce-kv
-                                   (fn [m k v]
-                                     (assoc m (transformer k) v)) {}))))
+      (update-some :required (partial mapv transformer))))
 
 (defn transform-contained-spec-names [transformer form]
   (if (map? form)
     (-> form
         (update-some :name transformer)
         (update-some :schema transform-schema transformer)
+        (update-some :properties (partial reduce-kv
+                                          (fn [m k v]
+                                            (-> m
+                                                (assoc (transformer k) (update-some v :title transformer))))
+                                          {}))
         (update-some :additionalProperties transform-schema transformer))
     form))
 
