@@ -17,7 +17,10 @@
 
 (defn transform-contained-spec-names [transformer form]
   (if (map? form)
-    (-> form (update-some :name transformer) (update-some :schema transform-schema transformer))
+    (-> form
+        (update-some :name transformer)
+        (update-some :schema transform-schema transformer)
+        (update-some :additionalProperties transform-schema transformer))
     form))
 
 

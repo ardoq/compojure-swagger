@@ -19,7 +19,12 @@
                                                   :required    true,
                                                   :schema      {:type       "object",
                                                                 :properties {"ardoq-swagger.core-test/first-name" {:type "string"},
-                                                                             "ardoq-swagger.core-test/last-name"  {:type "string"}},
+                                                                             "ardoq-swagger.core-test/last-name"  {:type "string"}
+                                                                             "ardoq-swagger.core-test/address"    {:type                 "object"
+                                                                                                                   :additionalProperties {:type       "object"
+                                                                                                                                          :properties {"ardoq-swagger.core-test/street"   {:type "string"}
+                                                                                                                                                       "ardoq-swagger.core-test/house-no" {:type "integer"}}
+                                                                                                                                          }}},
                                                                 :required   ["ardoq-swagger.core-test/first-name"]}}],
                                    :responses   {200 {:schema      {:type       "object",
                                                                     :properties {"ardoq-swagger.core-test/first-name" {:type "string"},
@@ -40,7 +45,11 @@
                                                 :required    true,
                                                 :schema      {:type       "object",
                                                               :properties {"first-name" {:type "string"},
-                                                                           "last-name"  {:type "string"}},
+                                                                           "last-name"  {:type "string"}
+                                                                           "address"    {:type                 "object",
+                                                                                         :additionalProperties {:type       "object",
+                                                                                                                :properties {"street"  {:type "string"},
+                                                                                                                             "house-no" {:type "integer"}}}}},
                                                               :required   ["first-name"]}}],
                                  :responses   {200 {:schema      {:type       "object",
                                                                   :properties {"first-name" {:type "string"},
