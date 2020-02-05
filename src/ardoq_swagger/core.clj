@@ -66,41 +66,33 @@
   [elem]
   (supported-verbs elem))
 
-(defn- unhandle-children
-  "If child is valid, don't let it have a handler"
-  [children]
+(defn- swap-namespace
+  "Recursively swap out valid forms for new-ns versions"
+  [children new-ns]
   (map #(cond
-          (-> % first name (= "routes")) (apply list (->> % first name (symbol swagger-private)) (unhandle-children (rest %))) ; Nested body
-          (-> % first name (= "context")) (apply list (->> % first name (symbol swagger-private)) (nth % 1) (nth % 2) (unhandle-children (nthrest % 3))) ; Nested body
+          (-> % first name (= "routes")) (apply list (->> % first name (symbol new-ns)) (swap-namespace (rest %) new-ns)) ; Nested body
+          (-> % first name (= "context")) (apply list (->> % first name (symbol new-ns)) (nth % 1) (nth % 2) (swap-namespace (nthrest % 3) new-ns)) ; Nested body
           (-> % first name verb?) (-> % vec
-                                      (assoc 0 (->> % first name (symbol swagger-private)))
+                                      (assoc 0 (->> % first name (symbol new-ns)))
                                       seq)
-          (= "with-swagger" (-> % first name)) (list (first %) (-> % second list unhandle-children first) (last %))
+          ;; We want to keep/discard with-swagger depending on namespace
+          (= "with-swagger" (-> % first name)) (cond
+                                                 (= new-ns swagger-private) (list (first %) (-> % second list (swap-namespace new-ns) first) (last %))
+                                                 (= new-ns compojure-core) (-> % second list (swap-namespace new-ns) first)
+                                                 :else (throw (IllegalArgumentException. "Unknown namespace. How did this happen?")))
           :else %) children))
-
-(defn- handlerify
-  "Recursively swap out valid forms for compojure versions"
-  [handlers]
-  (map #(cond
-          (-> % first name (= "routes")) (apply list (->> % first name (symbol compojure-core)) (handlerify (rest %))) ; Nested body
-          (-> % first name (= "context")) (apply list (->> % first name (symbol compojure-core)) (nth % 1) (nth % 2) (handlerify (nthrest % 3))) ; Nested body
-          (verb? (-> % first name)) (-> % vec
-                                        (assoc 0 (->> % first name (symbol compojure-core)))
-                                        seq)
-          (= "with-swagger" (-> % first name)) (-> % second list handlerify first)
-          :else %) handlers))
 
 (defmacro routes [& handlers]
   `(map->Route
      {:path     nil
-      :children (list ~@(unhandle-children handlers))
-      :handler  (cc/routes ~@(handlerify handlers))}))
+      :children (list ~@(swap-namespace handlers swagger-private))
+      :handler  (cc/routes ~@(swap-namespace handlers compojure-core))}))
 
 (defmacro context
   [path args & body]
   `(map->Route {:path     ~path
-                :children (list ~@(unhandle-children body))
-                :handler  (cc/context ~path ~args ~@(handlerify body))}))
+                :children (list ~@(swap-namespace body swagger-private))
+                :handler  (cc/context ~path ~args ~@(swap-namespace body compojure-core))}))
 
 
 (defn swagify-verb [verb]
