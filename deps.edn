@@ -1,0 +1,11 @@
+{:deps {org.clojure/clojure {:mvn/version "1.10.1"}
+        liberator {:mvn/version "0.15.3"}
+        ring {:mvn/version "1.8.0"}
+        org.clojure/spec.alpha {:mvn/version "0.2.176"}
+        compojure {:mvn/version "1.5.0"}
+        metosin/ring-swagger {:mvn/version "0.26.2"}
+        metosin/ring-swagger-ui {:mvn/version "3.24.3"}
+        metosin/spec-tools {:mvn/version "0.10.0"}}
+ :aliases {:deploy {:extra-deps {deps-deploy {:mvn/version "RELEASE"}}
+                    :main-opts ["-m" "deps-deploy.deps-deploy" "deploy"
+                                "target/ardoq-swagger-0.1.0.jar" "true"]}}}
