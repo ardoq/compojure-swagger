@@ -49,7 +49,7 @@ Will not work, as verb will not be able to resolve the req reference. However, w
 
 ## License
 
-Copyright © 2020 Ardoq boys
+Copyright © 2020 Ardoq
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
