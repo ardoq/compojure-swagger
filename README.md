@@ -1,4 +1,5 @@
 # compojure-swagger
+[![Clojars Project](https://img.shields.io/clojars/v/com.ardoq/compojure-swagger.svg)](https://clojars.org/com.ardoq/compojure-swagger) [![cljdoc badge](https://cljdoc.org/badge/com.ardoq/compojure-swagger)](https://cljdoc.org/d/com.ardoq/copmpojure-swagger/CURRENT) [![CircleCI](https://circleci.com/gh/ardoq/compojure-swagger.svg?style=svg)](https://circleci.com/gh/ardoq/compojure-swagger)
 
 A Clojure library designed to generate swagger documentation (openapi 2.0) for compojure API's.
 
