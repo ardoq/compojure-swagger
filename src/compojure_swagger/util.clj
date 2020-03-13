@@ -1,4 +1,4 @@
-(ns ardoq-swagger.util
+(ns compojure-swagger.util
   (:require [clojure.walk :as walk]))
 
 (defn update-some

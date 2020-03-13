@@ -1,7 +1,7 @@
-(ns ardoq-swagger.spec-test
+(ns compojure-swagger.spec-test
   (:require [clojure.test :refer :all]
             [clojure.spec.alpha :as s]
-            [ardoq-swagger.core :as core]
+            [compojure-swagger.core :as core]
             [spec-tools.core :as st]
             [spec-tools.swagger.core :as swagger]))
 

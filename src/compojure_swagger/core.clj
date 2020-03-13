@@ -1,15 +1,15 @@
-(ns ardoq-swagger.core
+(ns compojure-swagger.core
   (:require [liberator.core :refer [resource]]
             [compojure.core :as cc]
             [ring.swagger.common :as rsc]
             [ring.swagger.swagger-ui :as ui]
-            [ardoq-swagger.private]
+            [compojure-swagger.private]
             [spec-tools.swagger.core :as swagger]
             [clojure.string :as str]
-            [ardoq-swagger.util :as util])
+            [compojure-swagger.util :as util])
   (:import (clojure.lang IFn AFn)))
 
-(def swagger-private "ardoq-swagger.private")
+(def swagger-private "compojure-swagger.private")
 (def compojure-core "compojure.core")
 
 (defrecord Route [path method info children handler]
