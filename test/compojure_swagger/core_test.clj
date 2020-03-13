@@ -1,6 +1,6 @@
-(ns ardoq-swagger.core-test
+(ns compojure-swagger.core-test
   (:require [clojure.test :refer :all]
-            [ardoq-swagger.core :refer [routes context GET POST PUT DELETE ANY] :as core]
+            [compojure-swagger.core :refer [routes context GET POST PUT DELETE ANY] :as core]
             [clojure.spec.alpha :as s]
             [ring.mock.request :as mock]
             [spec-tools.swagger.core :as swagger]))

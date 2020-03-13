@@ -1,5 +1,5 @@
-(ns ardoq-swagger.private)
-  
+(ns compojure-swagger.private)
+
 (defrecord Route [path method info children])
 
 (defmacro routes [& handlers]
