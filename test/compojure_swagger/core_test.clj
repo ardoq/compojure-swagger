@@ -125,6 +125,19 @@
     (testing "swagify-verb swagifies verbs as expected"
       (is (= (swagify-verb handler) expected-swagger)))))
 
+(deftest swagger-category-swagify-test
+  (testing "swagger-category assigns tag as expected"
+    (let [handler (core/swagger-category (core/context "/model_trains" []
+                                                        (core/with-swagger
+                                                          (core/POST "/test1/:id" [])
+                                                          {:swagger-content {:summary "it works"}})
+                                                        (core/GET "/test2" []))
+                                          "model trains")
+          expected-swagger {"/model_trains/test1/:id" {:post {:summary    "it works",
+                                                              :tags ["model trains"]}}
+                            "/model_trains/test2" {:get {:tags ["model trains"]}}}]
+      (is (= (swagify-route handler) expected-swagger)))))
+
 (deftest with-swagger-get-test
   (testing "with-swagger doesn't create a required body when none is specified"
     (let [handler (core/with-swagger (core/GET "/test1" [])

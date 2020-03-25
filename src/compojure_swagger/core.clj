@@ -34,6 +34,11 @@
 (defn with-swagger [route swagger]
   (assoc route :swagger swagger))
 
+(defn swagger-category [route category-name]
+  (if (:children route)
+    (assoc route :children (map #(swagger-category % category-name) (:children route)))
+    (update-in route [:swagger :swagger-content :tags] conj category-name)))
+
 (defn- make-verb-route
   [verb path args body]
   `(map->Route {:path    ~path
@@ -76,7 +81,7 @@
                                       (assoc 0 (->> % first name (symbol new-ns)))
                                       seq)
           ;; We want to keep/discard with-swagger depending on namespace
-          (= "with-swagger" (-> % first name)) (cond
+          (#{"with-swagger" "swagger-category"} (-> % first name)) (cond
                                                  (= new-ns swagger-private) (list (first %) (-> % second list (swap-namespace new-ns) first) (last %))
                                                  (= new-ns compojure-core) (-> % second list (swap-namespace new-ns) first)
                                                  :else (throw (IllegalArgumentException. "Unknown namespace. How did this happen?")))
