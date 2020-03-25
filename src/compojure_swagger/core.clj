@@ -34,6 +34,11 @@
 (defn with-swagger [route swagger]
   (assoc route :swagger swagger))
 
+(defn swagger-categories [route category-names]
+  (if (:children route)
+    (assoc route :children (map #(swagger-categories % category-names) (:children route)))
+    (update-in route [:swagger :swagger-content :tags] #(apply conj %1 %2) category-names)))
+
 (defn swagger-category [route category-name]
   (if (:children route)
     (assoc route :children (map #(swagger-category % category-name) (:children route)))

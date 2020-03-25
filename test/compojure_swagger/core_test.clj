@@ -134,8 +134,21 @@
                                                         (core/GET "/test2" []))
                                           "model trains")
           expected-swagger {"/model_trains/test1/:id" {:post {:summary    "it works",
-                                                              :tags ["model trains"]}}
-                            "/model_trains/test2" {:get {:tags ["model trains"]}}}]
+                                                              :tags '("model trains")}}
+                            "/model_trains/test2" {:get {:tags '("model trains")}}}]
+      (is (= (swagify-route handler) expected-swagger)))))
+
+(deftest swagger-categories-swagify-test
+  (testing "swagger-categories (plural) assigns tags as expected"
+    (let [handler (core/swagger-categories (core/context "/model_trains" []
+                                                        (core/with-swagger
+                                                          (core/POST "/test1/:id" [])
+                                                          {:swagger-content {:summary "it works"}})
+                                                        (core/GET "/test2" []))
+                                          ["model trains" "stamp collecting"])
+          expected-swagger {"/model_trains/test1/:id" {:post {:summary    "it works",
+                                                              :tags '("stamp collecting" "model trains")}}
+                            "/model_trains/test2" {:get {:tags '("stamp collecting" "model trains")}}}]
       (is (= (swagify-route handler) expected-swagger)))))
 
 (deftest with-swagger-get-test
