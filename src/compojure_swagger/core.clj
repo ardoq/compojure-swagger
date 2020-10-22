@@ -156,10 +156,11 @@
   (cc/routes
     swag-routes
     (ui/swagger-ui (:meta-options options))
-    (cc/GET "/swagger.json" {}
+    (cc/GET "/swagger.json" req
       (resource :available-media-types ["application/json"]
                 :handle-ok
-                ((or (:route-filter options) identity)
+                ((or (:route-filter options) (fn [_ resp] resp))
+                 req
                  (swagger-spec
                    (rsc/deep-merge swagger-default (:swagger-options options))
                    swag-routes))))))
