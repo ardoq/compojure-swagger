@@ -131,7 +131,7 @@
   (s/def ::id int?)
   (let [id-spec (s/keys :req [::id])
         test-spec (s/keys :req [::first-name] :opt [::last-name])
-        privatize-filter (fn [data]
+        privatize-filter (fn [req data]
                            (update data :paths (partial
                                                 map
                                                 (fn [[path method-map]]
