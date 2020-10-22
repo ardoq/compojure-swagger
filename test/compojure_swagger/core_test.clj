@@ -125,6 +125,57 @@
     (testing "swagify-verb swagifies verbs as expected"
       (is (= (swagify-verb handler) expected-swagger)))))
 
+(deftest swagger-api-filter-test
+  (s/def ::first-name string?)
+  (s/def ::last-name string?)
+  (s/def ::id int?)
+  (let [id-spec (s/keys :req [::id])
+        test-spec (s/keys :req [::first-name] :opt [::last-name])
+        privatize-filter (fn [data]
+                           (update data :paths (partial
+                                                map
+                                                (fn [[path method-map]]
+                                                  (select-keys method-map (for [[k v] method-map :when (not (:private v))] k))))))
+        routes (routes
+                (core/with-swagger (core/POST "/test1/:id" [])
+                  {:swagger-content {:summary "public method 1"
+                                     ::swagger/parameters {:path id-spec
+                                                           :body test-spec}
+                                     ::swagger/responses  {200 {:schema test-spec}}}})
+                (core/with-swagger (core/POST "/test2/:id" [])
+                  {:swagger-content {:summary "public method 2"
+                                     ::swagger/parameters {:path id-spec
+                                                           :body test-spec}
+                                     ::swagger/responses  {200 {:schema test-spec}}}})
+                (core/with-swagger (core/POST "/test3/:id" [])
+                  {:swagger-content {:summary "private method"
+                                     :private true
+                                     ::swagger/parameters {:path id-spec
+                                                           :body test-spec}
+                                     ::swagger/responses  {200 {:schema test-spec}}}}))
+        unfiltered-handler (core/swagger-api
+                            {:meta-options {:path "/api-docs"}
+                             :swagger-options {:info {:title "REST api"}
+                                               :host "localhost"}}
+                            routes)
+        filtered-handler (core/swagger-api
+                          {:meta-options {:path "/api-docs"}
+                           :swagger-options {:info {:title "REST api"}
+                                             :host "localhost"}
+                           :route-filter privatize-filter}
+                          routes)]
+
+    (testing "with-swagger swagifies specs as expected"
+      (let [unfiltered-response (:body (unfiltered-handler (mock/request :get "/swagger.json")))
+            filtered-response (:body (filtered-handler (mock/request :get "/swagger.json")))]
+        (is (re-find #"public method 1" unfiltered-response))
+        (is (re-find #"public method 2" unfiltered-response))
+        (is (re-find #"private method" unfiltered-response))
+
+        (is (re-find #"public method 1" filtered-response))
+        (is (re-find #"public method 2" filtered-response))
+        (is (not (re-find #"private method" filtered-response)))))))
+
 (deftest swagger-category-swagify-test
   (testing "swagger-category assigns tag as expected"
     (let [handler (core/swagger-category (core/context "/model_trains" []
