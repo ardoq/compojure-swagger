@@ -61,6 +61,10 @@
   [path args & body]
   (make-verb-route :put path args body))
 
+(defmacro PATCH
+  [path args & body]
+  (make-verb-route :patch path args body))
+
 (defmacro DELETE
   [path args & body]
   (make-verb-route :delete path args body))
